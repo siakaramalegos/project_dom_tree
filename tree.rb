@@ -20,7 +20,6 @@ class Tree
     else
       new_node = Node.new(tag, text, classes, id, [], parent)
       parent.children << new_node if parent
-      binding.pry
     end
     new_node
   end
@@ -46,17 +45,17 @@ class Tree
   # end
 
   # No error handling
-  def find_node(index)
-    counter = 0
-    current_node = @head
+  # def find_node(index)
+  #   counter = 0
+  #   current_node = @head
 
-    while counter < index
-      current_node = current_node.children
-      counter += 1
-    end
+  #   while counter < index
+  #     current_node = current_node.children
+  #     counter += 1
+  #   end
 
-    current_node
-  end
+  #   current_node
+  # end
 
   # def get_text(lookup_tag)
   #   counter = 0
@@ -91,12 +90,5 @@ end
 # x = Tree.new
 # y = x.add_node_to_children('html', nil)
 # z = x.add_node_to_children('head', y)
-# binding.pry
-
 # zz = x.add_node_to_children('body', y)
-# x.add_node_to_end('bye', 'short for goodbye')
-# x.add_node_to_end('hola', 'Spanish for hello')
-# x.find_node(1)
-# x.find_node(2)
-# x.add_node_at_index('geia sou', "Greek for hello", 1)
-# x.length
+
