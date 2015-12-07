@@ -1,6 +1,7 @@
 require_relative 'tree'
 require 'pry'
 
+# Thoughts - treat text like another node so can rebuild in order. Close tags as clues to break loop and go up a level?
 class DOMReader
   attr_reader :head
 
@@ -20,10 +21,6 @@ class DOMReader
     file_string
   end
 
-  def get_next_tag(file_string, index)
-
-  end
-
   # go through file string grabbing each tag and building a node for it, then grab sub-tags and building a node for them (DFS-like), cleaning up on way back up.
   # Put the root node on the stack.
 
@@ -36,7 +33,6 @@ class DOMReader
 
     # TODO: get text content
 
-    # Node = Struct.new(:tag, :text, :classes, :id, :children, :parent)
     start_node = Node.new(tag[:tag], nil, tag[:classes], tag[:id], [])
     @head = start_node
     stack = [ start_node ]
@@ -59,10 +55,11 @@ class DOMReader
         break if tag.nil?
 
         closing_tag = "</#{tag[:tag]}>"
-        # TODO: allow for embedded duplicate tags
         new_tag_content = get_tag_content(tag, closing_tag, tag_content)
         # TODO: get text content
-        child_node = Node.new(tag[:tag], nil, tag[:classes], tag[:id], [], current_node)
+        start_text = (/>(.*?)</).match(tag_content).captures[0]
+
+        child_node = Node.new(tag[:tag], start_text, tag[:classes], tag[:id], [], current_node)
         current_node.children << child_node
 
         # Put child on the stack and recursively build descendants
@@ -80,24 +77,15 @@ class DOMReader
 
       break if stack.empty?
     end
-    #   if [current_node.x, current_node.y] == end_coords
-    #     return output_results(current_node, count, 'DFS', render_output)
-    #   else
-    #     edges = @edge_list.edge_list.select{|pair| pair[0] == current_node}
-    #     edges.each do |edge|
-    #       neighbor = edge[1]
+  end
 
-    #       neighbor.distance = current_node.distance + 1
-    #       neighbor.predecessor = current_node
-    #       stack << neighbor
-    #     end
-    #   end
-
+  def get_embedded_dups(closing_tag, string)
+    (/>(.*?)#{Regexp.quote(closing_tag)}/).match(string).captures.count
   end
 
   # Provides content between the open and close tag which becomes new string for recursively building tree
-  def get_tag_content(tag, closing_tag, content_string)
-    if match = (/>(.*?)#{Regexp.quote(closing_tag)}/).match(content_string)
+  def get_tag_content(tag, closing_tag, string, dups = 1)
+    if match = (/>(.*?)#{Regexp.quote(closing_tag)}/).match(string)
       tag_content = get_captures(match)
     end
     tag_content ? tag_content : nil
@@ -145,5 +133,3 @@ tree = reader.build_tree("test_basic.html")
 binding.pry
 puts reader.head
 puts tree
-
-# tag = parse_tag("<p class='foo bar' id='baz' name='fozzie'>")
