@@ -1,14 +1,12 @@
 require_relative 'tree'
 require 'pry'
 
-# Thoughts - treat text like another node so can rebuild in order. Close tags as clues to break loop and go up a level?
 class DOMReader
   attr_reader :head
 
   def build_tree(file)
     file_string = minimize(file)
-    tree = tree_builder(file_string)
-    file_string
+    tree_builder(file_string)
   end
 
   private
