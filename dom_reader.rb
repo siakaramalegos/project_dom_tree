@@ -6,7 +6,8 @@ class DOMReader
 
   def build_tree(file)
     file_string = minimize(file)
-    tree_builder(file_string)
+    tree = tree_builder(file_string)
+    tree
   end
 
   private
@@ -31,6 +32,7 @@ class DOMReader
     # process remaining content
     @tag_content = remove_tag(file_string)
     add_leaves(stack)
+    @head
   end
 
   def add_leaves(stack)
@@ -126,4 +128,4 @@ end
 reader = DOMReader.new
 tree = reader.build_tree("test.html")
 binding.pry
-puts reader.head
+puts "Goodbye."
