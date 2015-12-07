@@ -21,57 +21,48 @@ class DOMReader
     file_string
   end
 
-  # go through file string grabbing each tag and building a node for it, then grab sub-tags and building a node for them (DFS-like), cleaning up on way back up.
-  # Put the root node on the stack.
-
   # TODO: skip if tag is doctype declaration
+  # Go through file string grabbing each tag and building a node for it, then grab sub-tags and building a node for them (DFS-like), cleaning up on way back up.
   def tree_builder(file_string)
-    # Get initial tag info
+    # Put the root node on the stack.
     tag = parse_tag(file_string)
-    closing_tag = "</#{tag[:tag]}>"
-    tag_content = get_tag_content(tag, closing_tag, file_string)
-
-    # TODO: get text content
-
     start_node = Node.new(tag[:tag], nil, tag[:classes], tag[:id], [])
     @head = start_node
     stack = [ start_node ]
 
-    # process innards of tag (add to stack) recursively
-    add_leaves(stack, tag_content)
+    # process remaining content
+    @tag_content = remove_tag(file_string)
+    add_leaves(stack)
   end
 
-  def add_leaves(stack, tag_content)
+  def add_leaves(stack)
     loop do
-      # stop when tag_content nil or no sub-tags
-      break if tag_content.nil?
-
       current_node = stack.pop
 
-      # child loop
+      # Build children of current node
       loop do
-        # Get children
-        tag = parse_tag(tag_content)
-        break if tag.nil?
+        next_content_type = get_next_type(@tag_content)
+        # binding.pry
+        case next_content_type
+        when 'text'
+          text = @tag_content.match(/(.*?)</).captures[0]
+          child_node = Node.new(nil, text, nil, nil, nil, current_node)
+          current_node.children << child_node
 
-        closing_tag = "</#{tag[:tag]}>"
-        new_tag_content = get_tag_content(tag, closing_tag, tag_content)
-        # TODO: get text content
-        start_text = (/>(.*?)</).match(tag_content).captures[0]
-
-        child_node = Node.new(tag[:tag], start_text, tag[:classes], tag[:id], [], current_node)
-        current_node.children << child_node
-
-        # Put child on the stack and recursively build descendants
-        stack << child_node
-        add_leaves(stack, new_tag_content)
-
-        # Process next piece of content string, if any left
-        end_location = tag_content.index(closing_tag) + closing_tag.length
-        if end_location < tag_content.length
-          tag_content = tag_content[end_location..-1]
-        else
+          # No children to build, but need to change tag content to remove leading text
+          @tag_content = remove_leading_text(@tag_content)
+        when 'close tag'
+          @tag_content = remove_tag(@tag_content)
           break
+        when 'open tag'
+          tag = parse_tag(@tag_content)
+          child_node = Node.new(tag[:tag], nil, tag[:classes], tag[:id], [], current_node)
+          current_node.children << child_node
+
+          # Put child on the stack and recursively build descendants
+          stack << child_node
+          @tag_content = remove_tag(@tag_content)
+          add_leaves(stack)
         end
       end
 
@@ -79,16 +70,22 @@ class DOMReader
     end
   end
 
-  def get_embedded_dups(closing_tag, string)
-    (/>(.*?)#{Regexp.quote(closing_tag)}/).match(string).captures.count
+  def remove_leading_text(tag_content)
+    '<' + tag_content.match(/<(.*?)$/).captures[0]
   end
 
-  # Provides content between the open and close tag which becomes new string for recursively building tree
-  def get_tag_content(tag, closing_tag, string, dups = 1)
-    if match = (/>(.*?)#{Regexp.quote(closing_tag)}/).match(string)
-      tag_content = get_captures(match)
+  def remove_tag(tag_content)
+    tag_content.match(/>(.*?)$/).captures[0]
+  end
+
+  def get_next_type(tag_content)
+    if tag_content[0..1].match(/<\//)
+      'close tag'
+    elsif tag_content[0].match(/</)
+      'open tag'
+    else
+      'text'
     end
-    tag_content ? tag_content : nil
   end
 
   def parse_tag(tag_string)
@@ -129,7 +126,6 @@ class DOMReader
 end
 
 reader = DOMReader.new
-tree = reader.build_tree("test_basic.html")
+tree = reader.build_tree("test.html")
 binding.pry
 puts reader.head
-puts tree
