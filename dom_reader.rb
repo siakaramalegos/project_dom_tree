@@ -125,7 +125,7 @@ class DOMReader
 
 end
 
-reader = DOMReader.new
-tree = reader.build_tree("test.html")
-binding.pry
-puts "Goodbye."
+# reader = DOMReader.new
+# tree = reader.build_tree("test.html")
+# binding.pry
+# puts "Goodbye."
