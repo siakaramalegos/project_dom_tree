@@ -27,6 +27,8 @@ class NodeRenderer
     end
   end
 
+  private
+
   def get_size_by_type(node)
     current_node = node
     if current_node.children.nil? || current_node.children.empty?
@@ -46,7 +48,7 @@ class NodeRenderer
   end
 end
 
-reader = DOMReader.new
-tree = reader.build_tree("test.html")
-renderer = NodeRenderer.new(tree)
-renderer.render()
+# reader = DOMReader.new
+# tree = reader.build_tree("test.html")
+# renderer = NodeRenderer.new(tree)
+# renderer.render()
