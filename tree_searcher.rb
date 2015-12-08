@@ -24,7 +24,7 @@ class TreeSearcher
 
   def get_search_by(attribute, value, node)
     # If node is match, put it in the results
-    if attribute == :classes && node[attribute]
+    if (attribute == :classes || attribute == :text) && node[attribute]
       @search_by_results << node if node[attribute].include?(value)
     else
       @search_by_results << node if node[attribute] == value
@@ -50,3 +50,4 @@ searcher = TreeSearcher.new(tree)
 searcher.search_by(:classes, "sidebar").each { |node| renderer.render(node) }
 searcher.search_by(:classes, "bold").each { |node| renderer.render(node) }
 searcher.search_by(:tag, "div").each { |node| renderer.render(node) }
+searcher.search_by(:text, "div").each { |node| renderer.render(node) }
