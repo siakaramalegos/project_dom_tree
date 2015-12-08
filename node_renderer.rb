@@ -30,11 +30,10 @@ class NodeRenderer
   private
 
   def get_size_by_type(node)
-    current_node = node
-    if current_node.children.nil? || current_node.children.empty?
+    if node.children.nil? || node.children.empty?
       return @type_counts
     else
-      current_node.children.each do |child|
+      node.children.each do |child|
         if child.tag
           @type_counts[:tag] += 1
         else
