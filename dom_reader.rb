@@ -1,5 +1,6 @@
-require_relative 'tree'
 require 'pry'
+
+Node = Struct.new(:tag, :text, :classes, :id, :children, :parent)
 
 class DOMReader
   attr_reader :head
